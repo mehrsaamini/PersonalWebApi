@@ -286,37 +286,12 @@ namespace PersonalWeb.BusinessLayer.Services.Authorize.AdminRep
         public (int StatusCode, string Message) CreateNewService(CreateService serviceDto)
         {
             try
-            {
-                #region Add Picture
-
-                #region url
-                var MyConfig = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
-                var url = MyConfig.GetValue<string>("UrlSetting:Url");
-                #endregion
-
-                string imgName = ToolService.GenerateUniqCode() + Path.GetExtension(serviceDto.Icon.FileName);
-                string folderName = "/Services/Icons/";
-                string originalUrl = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot" + folderName);
-
-                #region add original File
-                if (!Directory.Exists(originalUrl))
-                {
-                    Directory.CreateDirectory(originalUrl);
-                }
-                using (var stream = new FileStream(Path.Combine(originalUrl, imgName), FileMode.Create))
-                {
-                    serviceDto.Icon.CopyTo(stream);
-                }
-                #endregion
-
-
-                #endregion
-
+            {                
                 var newService = new Service()
                 {
                     Name = serviceDto.Title,
                     Description = serviceDto.Description,
-                    Icon = url + folderName + imgName,
+                    IconId = serviceDto.IconId,
                     CreateDate = DateTime.Now,
                     IsDelete = false,
                 };
@@ -341,42 +316,9 @@ namespace PersonalWeb.BusinessLayer.Services.Authorize.AdminRep
                 if (existService == null)
                     return (404, "Not found this skill");
 
-                if (serviceDto.Icon != null)
-                {
-                    #region Add Picture
-
-                    #region url
-                    var MyConfig = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
-                    var url = MyConfig.GetValue<string>("UrlSetting:Url");
-                    #endregion
-
-                    string imgName = ToolService.GenerateUniqCode() + Path.GetExtension(serviceDto.Icon.FileName);
-                    string foldername = "/Services/Icons/";
-                    string originalUrl = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot" + foldername);
-
-                    #region add original File
-                    if (!Directory.Exists(originalUrl))
-                    {
-                        Directory.CreateDirectory(originalUrl);
-                    }
-                    using (var stream = new FileStream(Path.Combine(originalUrl, imgName), FileMode.Create))
-                    {
-                        serviceDto.Icon.CopyTo(stream);
-                    }
-                    #endregion
-
-                    #endregion
-
-                    //Delete last picture
-                    var LastImage = existService.Icon.Remove(0, (url + foldername).Length);
-                    if (File.Exists(originalUrl + LastImage))
-                        File.Delete(originalUrl + LastImage);
-
-                    existService.Icon = url + foldername + imgName;
-                }
-
                 existService.Name = serviceDto.Title;
                 existService.Description = serviceDto.Description;
+                existService.IconId = serviceDto.IconId;
 
                 _context.Services.Update(existService);
                 _context.SaveChanges();
@@ -422,7 +364,7 @@ namespace PersonalWeb.BusinessLayer.Services.Authorize.AdminRep
                 result.ServiceId = serviceId;
                 result.Title = existService.Name;
                 result.Description = existService.Description;
-                result.Icon = existService.Icon;
+                result.IconId = existService.IconId;
                 result.CreateDate = existService.CreateDate;
                 result.IsDelete= existService.IsDelete;
 
@@ -442,7 +384,7 @@ namespace PersonalWeb.BusinessLayer.Services.Authorize.AdminRep
                 var query = _context.Services.Where(s => !s.IsDelete).Select(s => new ServiceDto()
                 {
                     Description = s.Description,
-                    Icon = s.Icon,
+                    IconId = s.IconId,
                     ServiceId = s.ServiceId,
                     Title = s.Name,
                     CreateDate = s.CreateDate,

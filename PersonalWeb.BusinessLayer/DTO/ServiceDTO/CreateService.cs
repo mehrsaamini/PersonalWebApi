@@ -13,6 +13,6 @@ namespace PersonalWeb.BusinessLayer.DTO.ServiceDTO
 
         public string Description { get; set; }
 
-        public IFormFile Icon { get; set; }
+        public string IconId { get; set; }
     }
 }
